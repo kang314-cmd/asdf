@@ -19,34 +19,67 @@ const PublicDataApi = {
     if (key?.trim()) localStorage.setItem(this.STORAGE_KEY, key.trim());
   },
 
-  buildUrl(baseUrl, params) {
+  buildDaeguUrl(baseUrl, params) {
     const url = new URL(baseUrl);
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
     });
-    const key = this.getServiceKey();
-    if (key) url.searchParams.set('serviceKey', key);
     return url.toString();
   },
 
-  async fetchWithFallback(url) {
-    try {
-      const res = await fetch(url);
-      const text = await res.text();
-      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
-        throw new Error('API_MAINTENANCE');
+  buildAirKoreaUrl(path, params) {
+    const key = this.getServiceKey();
+    if (!key) throw new Error('공공데이터 API 인증키가 필요합니다. 아래 입력란에 키를 저장해 주세요.');
+
+    const url = new URL(`${window.PUBLIC_DATA_CONFIG?.airKoreaBase || 'https://apis.data.go.kr/B552584/ArpltnInforInqireSvc'}/${path}`);
+    url.searchParams.set('serviceKey', key);
+    url.searchParams.set('returnType', 'json');
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+    });
+    return url.toString();
+  },
+
+  async fetchText(url) {
+    const attempts = [
+      async () => {
+        const res = await fetch(url);
+        return res.text();
+      },
+      async () => {
+        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+        return res.text();
+      },
+      async () => {
+        const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`);
+        return res.text();
+      },
+      async () => {
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+        const json = await res.json();
+        return json.contents || '';
+      },
+    ];
+
+    let lastError = null;
+
+    for (const attempt of attempts) {
+      try {
+        const text = await attempt();
+        if (!text) continue;
+
+        const trimmed = text.trim();
+        if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html')) {
+          lastError = new Error('대구 대기질 API가 점검 중입니다. 에어코리아 API로 조회합니다.');
+          continue;
+        }
+        return text;
+      } catch (err) {
+        lastError = err;
       }
-      return { ok: res.ok, text, status: res.status };
-    } catch (err) {
-      if (err.message === 'API_MAINTENANCE') throw err;
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      const res = await fetch(proxyUrl);
-      const text = await res.text();
-      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
-        throw new Error('대구 대기질 API가 점검 중이거나 일시적으로 이용할 수 없습니다.');
-      }
-      return { ok: res.ok, text, status: res.status };
     }
+
+    throw lastError || new Error('API 서버에 연결할 수 없습니다. 인터넷 연결과 API 키를 확인해 주세요.');
   },
 };
 

@@ -1,23 +1,96 @@
-/** 대구광역시 대기질 일평균 API */
+/** 대구광역시 대기질 API (대구 Open API + 에어코리아 fallback) */
 const AirQuality = {
   async fetchMonth(yearMonth) {
     const dt = yearMonth.replace('-', '');
     if (!/^\d{6}$/.test(dt)) {
-      throw new Error('올바른 연월을 선택해 주세요. (예: 2024-01)');
+      throw new Error('올바른 연월을 선택해 주세요. (예: 2024-07)');
     }
 
-    const cfg = window.PUBLIC_DATA_CONFIG || {};
-    const jsonUrl = PublicDataApi.buildUrl(cfg.daeguAirJsonUrl || 'https://air.daegu.go.kr/api/json/dayavg.do', { data_dt: dt });
+    this.validateMonth(yearMonth);
+
+    const errors = [];
 
     try {
-      const { text } = await PublicDataApi.fetchWithFallback(jsonUrl);
-      const data = JSON.parse(text);
-      return this.normalizeRecords(data);
+      const records = await this.fetchDaeguDayAvg(dt);
+      if (records.length > 0) return records;
+      errors.push('대구 API: 해당 월 데이터 없음');
+    } catch (err) {
+      errors.push(`대구 API: ${err.message}`);
+    }
+
+    try {
+      const records = await this.fetchAirKoreaDaegu(yearMonth);
+      if (records.length > 0) return records;
+      errors.push('에어코리아: 데이터 없음');
+    } catch (err) {
+      errors.push(`에어코리아: ${err.message}`);
+    }
+
+    throw new Error(errors.join('\n'));
+  },
+
+  validateMonth(yearMonth) {
+    const [y, m] = yearMonth.split('-').map(Number);
+    const selected = new Date(y, m - 1, 1);
+    const now = new Date();
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    if (selected > thisMonth) {
+      throw new Error('미래 연월은 조회할 수 없습니다. 과거 또는 현재 월을 선택해 주세요.');
+    }
+  },
+
+  async fetchDaeguDayAvg(dt) {
+    const cfg = window.PUBLIC_DATA_CONFIG || {};
+    const jsonUrl = PublicDataApi.buildDaeguUrl(
+      cfg.daeguAirJsonUrl || 'https://air.daegu.go.kr/api/json/dayavg.do',
+      { data_dt: dt }
+    );
+
+    try {
+      const text = await PublicDataApi.fetchText(jsonUrl);
+      return this.normalizeRecords(JSON.parse(text));
     } catch {
-      const xmlUrl = PublicDataApi.buildUrl(cfg.daeguAirXmlUrl || 'https://air.daegu.go.kr/api/xml/dayavg.do', { data_dt: dt });
-      const { text } = await PublicDataApi.fetchWithFallback(xmlUrl);
+      const xmlUrl = PublicDataApi.buildDaeguUrl(
+        cfg.daeguAirXmlUrl || 'https://air.daegu.go.kr/api/xml/dayavg.do',
+        { data_dt: dt }
+      );
+      const text = await PublicDataApi.fetchText(xmlUrl);
       return this.parseXml(text);
     }
+  },
+
+  async fetchAirKoreaDaegu(yearMonth) {
+    const url = PublicDataApi.buildAirKoreaUrl('getCtprvnRltmMesureDnsty', {
+      sidoName: '대구',
+      numOfRows: '100',
+      pageNo: '1',
+      ver: '1.0',
+    });
+
+    const text = await PublicDataApi.fetchText(url);
+    const data = JSON.parse(text);
+    const items = data?.response?.body?.items;
+
+    if (!items || items.length === 0) {
+      throw new Error(data?.response?.header?.resultMsg || '응답 데이터가 없습니다.');
+    }
+
+    const arr = Array.isArray(items) ? items : [items];
+    const prefix = yearMonth;
+
+    let filtered = arr.filter((item) => String(item.dataTime || '').startsWith(prefix));
+    if (filtered.length === 0) filtered = arr;
+
+    return filtered.map((item) => ({
+        date: item.dataTime || '-',
+        station: item.stationName || '-',
+        pm10: item.pm10Value ?? '-',
+        pm25: item.pm25Value ?? '-',
+        o3: item.o3Value ?? '-',
+        no2: item.no2Value ?? '-',
+        co: item.coValue ?? '-',
+        so2: item.so2Value ?? '-',
+      }));
   },
 
   normalizeRecords(raw) {
@@ -46,8 +119,8 @@ const AirQuality = {
     };
 
     return {
-      date: get('data_dt', 'msrDt', 'date', 'mesureDe', 'day'),
-      station: get('msrstn_nm', 'msrstnNm', 'station', 'spot_nm', 'spotNm', 'name'),
+      date: get('data_dt', 'msrDt', 'date', 'mesureDe', 'day', 'dataTime'),
+      station: get('msrstn_nm', 'msrstnNm', 'stationName', 'station', 'spot_nm', 'spotNm', 'name'),
       pm10: get('pm10', 'PM10', 'pm10Value', 'pm10_avg'),
       pm25: get('pm25', 'PM25', 'pm2_5', 'pm25Value', 'pm25_avg'),
       o3: get('o3', 'O3', 'o3Value', 'o3_avg'),
@@ -64,7 +137,7 @@ const AirQuality = {
     const items = [...doc.querySelectorAll('item, row, data, record')];
     if (items.length === 0) {
       const root = doc.documentElement;
-      if (root && root.children.length) {
+      if (root?.children.length) {
         return [...root.children].map((el) => {
           const obj = {};
           [...el.children].forEach((c) => { obj[c.tagName] = c.textContent; });

@@ -422,21 +422,21 @@ const App = {
     return `
       <section class="page-header">
         <h2>대구 대기질</h2>
-        <p>공공데이터 — 대구광역시 대기질 일평균농도</p>
+        <p>공공데이터 — 대구광역시 일평균 + 에어코리아(대구) 실시간</p>
       </section>
       <div class="air-search card">
         <div class="air-search-row">
           <div class="air-field">
             <label for="air-month">조회 연월</label>
-            <input type="month" id="air-month" class="input" value="${defaultMonth}">
+            <input type="month" id="air-month" class="input" value="${defaultMonth}" max="${defaultMonth}">
           </div>
           <button class="btn btn-primary" id="air-search-btn">조회</button>
         </div>
         <div class="air-key-row">
-          <input type="password" id="air-service-key" class="input input-sm" placeholder="공공데이터 API 인증키 (선택)">
+          <input type="password" id="air-service-key" class="input input-sm" placeholder="공공데이터 API 인증키 (필수)">
           <button class="btn btn-outline btn-sm" id="air-save-key">키 저장</button>
         </div>
-        <p class="air-api-note">API: air.daegu.go.kr · data_dt=YYYYMM · 대구 API는 인증키 없이도 동작할 수 있습니다</p>
+        <p class="air-api-note">① 대구 API(dayavg) 시도 → ② 에어코리아(대구) 자동 fallback · 키는 data.go.kr에서 발급</p>
       </div>
       <div id="air-status" class="air-status card" hidden></div>
       <div id="air-results" class="air-results card">
@@ -573,7 +573,7 @@ const App = {
         statusEl.textContent = err.message || '데이터 조회 실패';
         statusEl.className = 'air-status card error';
       }
-      resultsEl.innerHTML = `<p class="empty-msg">${this.escape(err.message || '조회 실패')}</p>`;
+      resultsEl.innerHTML = `<p class="empty-msg air-error">${this.escape(err.message || '조회 실패').replace(/\n/g, '<br>')}</p>`;
     }
   },
 

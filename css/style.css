@@ -1176,7 +1176,9 @@ a { color: inherit; text-decoration: none; }
 }
 
 .air-status.loading { color: var(--warning); }
-.air-status.error { color: var(--danger); }
+.air-status.error { color: var(--danger); white-space: pre-line; }
+
+.air-error { white-space: pre-line; line-height: 1.6; }
 
 .air-results h3 {
   font-size: 1.1rem;
