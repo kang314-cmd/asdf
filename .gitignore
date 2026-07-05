@@ -1,6 +1,9 @@
 # GitHub 토큰 (절대 커밋 금지)
 .github-token.local
 
+# GPT API 키 (절대 커밋 금지)
+js/gpt-config.local.js
+
 # OS / 에디터
 .DS_Store
 Thumbs.db
