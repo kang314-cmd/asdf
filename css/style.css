@@ -943,6 +943,293 @@ a { color: inherit; text-decoration: none; }
   text-decoration: underline;
 }
 
+.imagebot-download:hover {
+  text-decoration: underline;
+}
+
+/* Anime Bot */
+.animebot-fab {
+  background: linear-gradient(145deg, #06b6d4 0%, #3b82f6 100%);
+  box-shadow: 0 8px 32px rgba(6, 182, 212, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.animebot-fab:hover {
+  box-shadow: 0 12px 40px rgba(6, 182, 212, 0.6), 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.animebot-pulse { border: 2px solid rgba(6, 182, 212, 0.6); }
+
+.animebot-panel {
+  width: 440px;
+  max-width: calc(100vw - 2rem);
+  height: 640px;
+  max-height: calc(100vh - 120px);
+}
+
+.animebot-header {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(59, 130, 246, 0.2));
+}
+
+.animebot-avatar {
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+}
+
+.animebot-form {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.animebot-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+
+.animebot-upload {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.animebot-file-input { display: none; }
+
+.animebot-file-label {
+  display: inline-flex;
+  padding: 0.5rem 1rem;
+  background: var(--bg-dark);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.animebot-file-label:hover { border-color: #06b6d4; }
+
+.animebot-preview {
+  margin-bottom: 0.75rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  max-height: 120px;
+}
+
+.animebot-preview img {
+  width: 100%;
+  max-height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.animebot-style-input {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.animebot-style-input:focus {
+  outline: none;
+  border-color: #06b6d4;
+}
+
+.animebot-convert-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #06b6d4, #3b82f6) !important;
+}
+
+.animebot-status {
+  padding: 0.65rem 1rem;
+  font-size: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.animebot-status.loading { color: var(--warning); background: rgba(245, 158, 11, 0.08); }
+.animebot-status.success { color: var(--success); background: rgba(34, 197, 94, 0.08); }
+.animebot-status.error { color: var(--danger); background: rgba(239, 68, 68, 0.08); }
+
+.animebot-result-wrap {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.animebot-result-title {
+  padding: 0.75rem 1rem 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.animebot-result-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.animebot-result-empty[hidden] { display: none !important; }
+
+.animebot-result {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.animebot-result-item {
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+}
+
+.animebot-compare {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.animebot-compare-col {
+  flex: 1;
+  text-align: center;
+}
+
+.animebot-compare-col img {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.animebot-compare-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.animebot-compare-arrow {
+  color: #06b6d4;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.animebot-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0.5rem 0;
+  line-height: 1.4;
+}
+
+.animebot-download {
+  font-size: 0.75rem;
+  color: #06b6d4;
+  font-weight: 500;
+}
+
+/* Air Quality Page */
+.air-search-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.air-field label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.air-field .input { margin-bottom: 0; }
+
+.air-key-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.air-key-row .input { flex: 1; min-width: 200px; margin-bottom: 0; }
+
+.air-api-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.air-status.loading { color: var(--warning); }
+.air-status.error { color: var(--danger); }
+
+.air-results h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.air-count {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: normal;
+}
+
+.air-table-wrap {
+  overflow-x: auto;
+}
+
+.air-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.air-table th,
+.air-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.air-table th {
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.air-table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.air-grade {
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.air-grade.good { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+.air-grade.moderate { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+.air-grade.bad { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+.air-grade.very-bad { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
 /* Chatbot (기존 스타일 유지) */
 .chatbot-header-info {
   display: flex;
@@ -1108,10 +1395,14 @@ a { color: inherit; text-decoration: none; }
   .bot-fab { width: 58px; height: 58px; }
   .bot-fab-icon { width: 26px; height: 26px; }
   .chatbot-panel,
-  .imagebot-panel {
+  .imagebot-panel,
+  .animebot-panel {
     width: calc(100vw - 40px);
     height: calc(100vh - 100px);
     bottom: 76px;
     right: 0;
   }
+
+  .animebot-compare { flex-direction: column; }
+  .animebot-compare-arrow { transform: rotate(90deg); }
 }

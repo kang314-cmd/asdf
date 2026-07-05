@@ -21,7 +21,7 @@ const ImageBot = {
     if (this.isOpen) {
       this.close();
     } else {
-      if (typeof Chatbot !== 'undefined' && Chatbot.isOpen) Chatbot.close();
+      BotUi.closeOthers('imagebot');
       this.open();
     }
   },

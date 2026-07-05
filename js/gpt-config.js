@@ -15,5 +15,6 @@
     imageModel: 'gpt-image-2',
     imageEndpoint: 'https://api.openai.com/v1/images/generations',
     imageSize: '1024x1024',
+    visionModel: 'gpt-4o-mini',
   };
 })();

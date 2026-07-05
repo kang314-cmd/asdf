@@ -156,6 +156,7 @@ const App = {
       case 'mailbox': main.innerHTML = this.renderMailbox(); break;
       case 'approvals': main.innerHTML = this.renderApprovals(); break;
       case 'announce': main.innerHTML = this.renderAnnounce(); break;
+      case 'air': main.innerHTML = this.renderAirQuality(); break;
       default: main.innerHTML = this.renderHome();
     }
     this.bindDynamicEvents();
@@ -195,6 +196,11 @@ const App = {
           <div class="feature-icon">📢</div>
           <h3>업데이트 소식</h3>
           <p>패치 노트와 이벤트 정보</p>
+        </div>
+        <div class="feature-card" data-page="air">
+          <div class="feature-icon">🌫️</div>
+          <h3>대구 대기질</h3>
+          <p>공공데이터 API 기반 일평균 대기질 조회</p>
         </div>
       </section>
       <section class="world-preview">
@@ -409,6 +415,36 @@ const App = {
     `;
   },
 
+  renderAirQuality() {
+    const now = new Date();
+    const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    return `
+      <section class="page-header">
+        <h2>대구 대기질</h2>
+        <p>공공데이터 — 대구광역시 대기질 일평균농도</p>
+      </section>
+      <div class="air-search card">
+        <div class="air-search-row">
+          <div class="air-field">
+            <label for="air-month">조회 연월</label>
+            <input type="month" id="air-month" class="input" value="${defaultMonth}">
+          </div>
+          <button class="btn btn-primary" id="air-search-btn">조회</button>
+        </div>
+        <div class="air-key-row">
+          <input type="password" id="air-service-key" class="input input-sm" placeholder="공공데이터 API 인증키 (선택)">
+          <button class="btn btn-outline btn-sm" id="air-save-key">키 저장</button>
+        </div>
+        <p class="air-api-note">API: air.daegu.go.kr · data_dt=YYYYMM · 대구 API는 인증키 없이도 동작할 수 있습니다</p>
+      </div>
+      <div id="air-status" class="air-status card" hidden></div>
+      <div id="air-results" class="air-results card">
+        <p class="empty-msg">연월을 선택하고 조회 버튼을 클릭하세요.</p>
+      </div>
+    `;
+  },
+
   bindDynamicEvents() {
     document.querySelectorAll('[data-page]').forEach((el) => {
       el.addEventListener('click', (e) => {
@@ -451,6 +487,94 @@ const App = {
     this.bindMailboxEvents();
     this.bindApprovalEvents();
     this.bindAnnounceEvents();
+    this.bindAirEvents();
+  },
+
+  bindAirEvents() {
+    const searchBtn = document.getElementById('air-search-btn');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => this.searchAirQuality());
+    }
+
+    const saveKeyBtn = document.getElementById('air-save-key');
+    if (saveKeyBtn) {
+      saveKeyBtn.addEventListener('click', () => {
+        const key = document.getElementById('air-service-key')?.value.trim();
+        if (key) {
+          PublicDataApi.saveServiceKey(key);
+          this.showToast('공공데이터 API 키가 저장되었습니다.', 'success');
+        }
+      });
+    }
+
+    const savedKey = PublicDataApi.getServiceKey();
+    const keyInput = document.getElementById('air-service-key');
+    if (keyInput && savedKey) keyInput.value = savedKey;
+  },
+
+  async searchAirQuality() {
+    const month = document.getElementById('air-month')?.value;
+    const statusEl = document.getElementById('air-status');
+    const resultsEl = document.getElementById('air-results');
+    if (!month || !resultsEl) return;
+
+    if (statusEl) {
+      statusEl.hidden = false;
+      statusEl.textContent = '데이터를 불러오는 중...';
+      statusEl.className = 'air-status card loading';
+    }
+
+    try {
+      const records = await AirQuality.fetchMonth(month);
+      if (statusEl) statusEl.hidden = true;
+
+      if (records.length === 0) {
+        resultsEl.innerHTML = '<p class="empty-msg">해당 월의 데이터가 없습니다.</p>';
+        return;
+      }
+
+      resultsEl.innerHTML = `
+        <h3>${month.replace('-', '년 ')}월 대기질 일평균 <span class="air-count">${records.length}건</span></h3>
+        <div class="air-table-wrap">
+          <table class="air-table">
+            <thead>
+              <tr>
+                <th>측정소</th>
+                <th>날짜</th>
+                <th>PM10</th>
+                <th>PM2.5</th>
+                <th>O₃</th>
+                <th>NO₂</th>
+                <th>CO</th>
+                <th>SO₂</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${records.map((r) => {
+                const grade = AirQuality.gradePm25(r.pm25);
+                return `<tr>
+                  <td>${this.escape(String(r.station))}</td>
+                  <td>${this.escape(String(r.date))}</td>
+                  <td>${this.escape(String(r.pm10))}</td>
+                  <td><span class="air-grade ${grade}">${this.escape(String(r.pm25))}</span></td>
+                  <td>${this.escape(String(r.o3))}</td>
+                  <td>${this.escape(String(r.no2))}</td>
+                  <td>${this.escape(String(r.co))}</td>
+                  <td>${this.escape(String(r.so2))}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    } catch (err) {
+      if (statusEl) {
+        statusEl.hidden = false;
+        statusEl.textContent = err.message || '데이터 조회 실패';
+        statusEl.className = 'air-status card error';
+      }
+      resultsEl.innerHTML = `<p class="empty-msg">${this.escape(err.message || '조회 실패')}</p>`;
+    }
   },
 
   bindCommentActions() {

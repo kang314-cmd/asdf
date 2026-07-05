@@ -22,6 +22,7 @@
         <a href="#" data-page="board" data-board="dev_notes">개발자 노트</a>
         <a href="#" data-page="board" data-board="world_lore">세계관</a>
         <a href="#" data-page="board" data-board="update_news">업데이트</a>
+        <a href="#" data-page="air">대기질</a>
         <a href="#" data-page="mailbox" id="nav-mailbox">우편함 <span id="mail-badge" class="badge">0</span></a>
         <a href="#" data-page="approvals" id="nav-approvals" class="staff-only">결재</a>
         <a href="#" data-page="announce" id="nav-announce" class="staff-only">공지 작성</a>
@@ -74,10 +75,61 @@
 
   <!-- GPT API 설정 -->
   <script src="js/gpt-config.js"></script>
+  <script src="js/public-data-config.js"></script>
   <script src="js/gpt-api.js"></script>
+  <script src="js/public-data-api.js"></script>
+  <script src="js/bot-ui.js"></script>
 
-  <!-- 플로팅 봇 (이미지 생성 + 챗봇) -->
+  <!-- 플로팅 봇 -->
   <div class="floating-bots">
+
+  <!-- 애니 캐릭터 변환봇 -->
+  <div id="animebot-widget" class="bot-widget animebot-widget">
+    <div id="animebot-panel" class="bot-panel animebot-panel" hidden>
+      <div class="bot-header animebot-header">
+        <div class="bot-header-info">
+          <div class="bot-avatar animebot-avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-.99 4.03-1.54 6-1.54s5.97.55 6 1.54c-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+          </div>
+          <div>
+            <strong>애니 캐릭터 변환</strong>
+            <span class="bot-sub">GPT Vision + Image</span>
+          </div>
+        </div>
+        <button id="animebot-close" class="bot-close" aria-label="닫기">&times;</button>
+      </div>
+      <form id="animebot-form" class="animebot-form">
+        <label class="animebot-label">이미지 업로드</label>
+        <div class="animebot-upload">
+          <input type="file" id="animebot-file" accept="image/*" class="animebot-file-input">
+          <label for="animebot-file" class="animebot-file-label">📁 사진 선택</label>
+          <button type="button" id="animebot-clear-file" class="btn btn-text btn-sm">초기화</button>
+        </div>
+        <div id="animebot-preview" class="animebot-preview" hidden>
+          <img id="animebot-preview-img" alt="업로드 미리보기">
+        </div>
+        <label for="animebot-style" class="animebot-label">추가 스타일 (선택)</label>
+        <input type="text" id="animebot-style" class="animebot-style-input" placeholder="예: 귀여운 chibi 스타일, 파란 머리">
+        <button type="submit" id="animebot-convert" class="btn btn-primary animebot-convert-btn">애니 캐릭터로 변환</button>
+      </form>
+      <div id="animebot-status" class="animebot-status" hidden></div>
+      <div class="animebot-result-wrap">
+        <h4 class="animebot-result-title">변환 결과</h4>
+        <div id="animebot-result-empty" class="animebot-result-empty">
+          <p>이미지를 업로드하고 변환 버튼을 눌러보세요</p>
+        </div>
+        <div id="animebot-result" class="animebot-result"></div>
+      </div>
+    </div>
+    <button id="animebot-toggle" class="bot-fab animebot-fab" type="button" aria-label="애니 캐릭터 변환봇 열기">
+      <span class="bot-fab-pulse animebot-pulse" aria-hidden="true"></span>
+      <svg class="bot-fab-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-.99 4.03-1.54 6-1.54s5.97.55 6 1.54c-1.29 1.94-3.5 3.22-6 3.22z"/>
+      </svg>
+    </button>
+  </div>
 
   <!-- 이미지 생성봇 -->
   <div id="imagebot-widget" class="bot-widget imagebot-widget">
@@ -177,8 +229,10 @@
   <script src="js/mailbox.js"></script>
   <script src="js/comments.js"></script>
   <script src="js/board.js"></script>
+  <script src="js/air-quality.js"></script>
   <script src="js/app.js"></script>
   <script src="js/chatbot.js"></script>
   <script src="js/imagebot.js"></script>
+  <script src="js/animebot.js"></script>
 </body>
 </html>
