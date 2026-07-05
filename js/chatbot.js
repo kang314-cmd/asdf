@@ -21,11 +21,21 @@ const Chatbot = {
     saveKeyBtn?.addEventListener('click', () => this.saveApiKey());
     settingsBtn?.addEventListener('click', () => this.toggleSettings());
 
+    this.bootstrapApiKey();
     this.updateKeyUI();
   },
 
+  bootstrapApiKey() {
+    const builtIn = window.GPT_CONFIG?.apiKey;
+    if (builtIn && builtIn !== 'YOUR_OPENAI_API_KEY_HERE' && !localStorage.getItem(this.STORAGE_KEY)) {
+      localStorage.setItem(this.STORAGE_KEY, builtIn);
+    }
+  },
+
   getApiKey() {
-    return localStorage.getItem(this.STORAGE_KEY) || '';
+    return localStorage.getItem(this.STORAGE_KEY)
+      || window.GPT_CONFIG?.apiKey
+      || '';
   },
 
   saveApiKey() {
@@ -45,14 +55,19 @@ const Chatbot = {
     const setup = document.getElementById('chatbot-key-setup');
     if (!setup) return;
     setup.hidden = !setup.hidden;
+    if (!setup.hidden) {
+      document.getElementById('chatbot-api-key')?.focus();
+    }
   },
 
   updateKeyUI() {
     const hasKey = !!this.getApiKey();
     const setup = document.getElementById('chatbot-key-setup');
     const form = document.getElementById('chatbot-form');
-    if (setup) setup.hidden = hasKey;
+    const settingsBtn = document.getElementById('chatbot-settings');
+    if (setup) setup.hidden = true;
     if (form) form.style.display = hasKey ? 'flex' : 'none';
+    if (settingsBtn) settingsBtn.hidden = !hasKey;
   },
 
   toggle() {
@@ -123,8 +138,8 @@ const Chatbot = {
     const apiKey = this.getApiKey();
     const config = window.GPT_CONFIG || {};
     if (!apiKey) {
-      this.appendMessage('bot', 'GPT API 키가 필요합니다. 위 입력란에 키를 저장해 주세요.');
-      this.toggleSettings();
+      this.appendMessage('bot', 'GPT API 키가 설정되지 않았습니다. ⚙ 버튼에서 키를 입력해 주세요.');
+      document.getElementById('chatbot-key-setup').hidden = false;
       return;
     }
 
