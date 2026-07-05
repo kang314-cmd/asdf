@@ -12,5 +12,8 @@
     endpoint: 'https://api.openai.com/v1/chat/completions',
     maxTokens: 800,
     temperature: 0.7,
+    imageModel: 'gpt-image-2',
+    imageEndpoint: 'https://api.openai.com/v1/images/generations',
+    imageSize: '1024x1024',
   };
 })();

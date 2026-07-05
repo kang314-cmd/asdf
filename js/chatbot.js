@@ -1,6 +1,5 @@
 /** ASDF GPT 챗봇 */
 const Chatbot = {
-  STORAGE_KEY: 'asdf_gpt_api_key',
   history: [],
   isOpen: false,
   isLoading: false,
@@ -21,21 +20,11 @@ const Chatbot = {
     saveKeyBtn?.addEventListener('click', () => this.saveApiKey());
     settingsBtn?.addEventListener('click', () => this.toggleSettings());
 
-    this.bootstrapApiKey();
     this.updateKeyUI();
   },
 
-  bootstrapApiKey() {
-    const builtIn = window.GPT_CONFIG?.apiKey;
-    if (builtIn && builtIn !== 'YOUR_OPENAI_API_KEY_HERE' && !localStorage.getItem(this.STORAGE_KEY)) {
-      localStorage.setItem(this.STORAGE_KEY, builtIn);
-    }
-  },
-
   getApiKey() {
-    return localStorage.getItem(this.STORAGE_KEY)
-      || window.GPT_CONFIG?.apiKey
-      || '';
+    return GptApi.getApiKey();
   },
 
   saveApiKey() {
@@ -45,10 +34,10 @@ const Chatbot = {
       this.appendMessage('bot', 'API 키를 입력해 주세요.');
       return;
     }
-    localStorage.setItem(this.STORAGE_KEY, key);
+    GptApi.saveApiKey(key);
     if (input) input.value = '';
     this.updateKeyUI();
-    this.appendMessage('bot', 'API 키가 저장되었습니다. 이제 질문해 보세요!');
+    this.appendMessage('bot', 'API 키가 저장되었습니다. 챗봇과 이미지 생성봇 모두 사용 가능합니다!');
   },
 
   toggleSettings() {
@@ -71,7 +60,12 @@ const Chatbot = {
   },
 
   toggle() {
-    this.isOpen ? this.close() : this.open();
+    if (this.isOpen) {
+      this.close();
+    } else {
+      if (typeof ImageBot !== 'undefined' && ImageBot.isOpen) ImageBot.close();
+      this.open();
+    }
   },
 
   open() {
