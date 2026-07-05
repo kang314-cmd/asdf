@@ -1,5 +1,6 @@
 /** ASDF GPT 챗봇 */
 const Chatbot = {
+  STORAGE_KEY: 'asdf_gpt_api_key',
   history: [],
   isOpen: false,
   isLoading: false,
@@ -8,6 +9,8 @@ const Chatbot = {
     const toggle = document.getElementById('chatbot-toggle');
     const close = document.getElementById('chatbot-close');
     const form = document.getElementById('chatbot-form');
+    const saveKeyBtn = document.getElementById('chatbot-save-key');
+    const settingsBtn = document.getElementById('chatbot-settings');
 
     toggle?.addEventListener('click', () => this.toggle());
     close?.addEventListener('click', () => this.close());
@@ -15,6 +18,41 @@ const Chatbot = {
       e.preventDefault();
       this.send();
     });
+    saveKeyBtn?.addEventListener('click', () => this.saveApiKey());
+    settingsBtn?.addEventListener('click', () => this.toggleSettings());
+
+    this.updateKeyUI();
+  },
+
+  getApiKey() {
+    return localStorage.getItem(this.STORAGE_KEY) || '';
+  },
+
+  saveApiKey() {
+    const input = document.getElementById('chatbot-api-key');
+    const key = input?.value.trim();
+    if (!key) {
+      this.appendMessage('bot', 'API 키를 입력해 주세요.');
+      return;
+    }
+    localStorage.setItem(this.STORAGE_KEY, key);
+    if (input) input.value = '';
+    this.updateKeyUI();
+    this.appendMessage('bot', 'API 키가 저장되었습니다. 이제 질문해 보세요!');
+  },
+
+  toggleSettings() {
+    const setup = document.getElementById('chatbot-key-setup');
+    if (!setup) return;
+    setup.hidden = !setup.hidden;
+  },
+
+  updateKeyUI() {
+    const hasKey = !!this.getApiKey();
+    const setup = document.getElementById('chatbot-key-setup');
+    const form = document.getElementById('chatbot-form');
+    if (setup) setup.hidden = hasKey;
+    if (form) form.style.display = hasKey ? 'flex' : 'none';
   },
 
   toggle() {
@@ -25,7 +63,12 @@ const Chatbot = {
     this.isOpen = true;
     document.getElementById('chatbot-panel')?.removeAttribute('hidden');
     document.getElementById('chatbot-toggle')?.classList.add('active');
-    document.getElementById('chatbot-input')?.focus();
+    this.updateKeyUI();
+    if (this.getApiKey()) {
+      document.getElementById('chatbot-input')?.focus();
+    } else {
+      document.getElementById('chatbot-api-key')?.focus();
+    }
   },
 
   close() {
@@ -77,9 +120,11 @@ const Chatbot = {
     const text = input?.value.trim();
     if (!text) return;
 
-    const config = window.GPT_CONFIG;
-    if (!config?.apiKey || config.apiKey === 'YOUR_OPENAI_API_KEY_HERE') {
-      this.appendMessage('bot', 'GPT API 키가 설정되지 않았습니다. index.html의 GPT_CONFIG.apiKey를 확인해 주세요.');
+    const apiKey = this.getApiKey();
+    const config = window.GPT_CONFIG || {};
+    if (!apiKey) {
+      this.appendMessage('bot', 'GPT API 키가 필요합니다. 위 입력란에 키를 저장해 주세요.');
+      this.toggleSettings();
       return;
     }
 
@@ -92,11 +137,11 @@ const Chatbot = {
     this.appendLoading();
 
     try {
-      const res = await fetch(config.endpoint, {
+      const res = await fetch(config.endpoint || 'https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${config.apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: config.model || 'gpt-4o-mini',
@@ -122,7 +167,7 @@ const Chatbot = {
       const reply = data.choices?.[0]?.message?.content?.trim() || '응답을 받지 못했습니다.';
       this.history.push({ role: 'assistant', content: reply });
       this.appendMessage('bot', reply);
-    } catch (err) {
+    } catch {
       this.removeLoading();
       this.appendMessage('bot', '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.');
       this.history.pop();

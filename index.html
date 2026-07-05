@@ -72,8 +72,7 @@
 
   <div id="toast" class="toast"></div>
 
-  <!-- GPT API 설정 (챗봇용) — gpt-config.local.js에 실제 키 입력 -->
-  <script src="js/gpt-config.local.js"></script>
+  <!-- GPT API 설정 (챗봇용) -->
   <script src="js/gpt-config.js"></script>
 
   <!-- 챗봇 위젯 -->
@@ -88,7 +87,15 @@
           <strong>ASDF 가이드</strong>
           <span class="chatbot-sub">GPT 기반 게임 도우미</span>
         </div>
-        <button id="chatbot-close" class="chatbot-close" aria-label="닫기">&times;</button>
+        <div class="chatbot-header-actions">
+          <button id="chatbot-settings" class="chatbot-settings-btn" type="button" title="API 키 설정">⚙</button>
+          <button id="chatbot-close" class="chatbot-close" aria-label="닫기">&times;</button>
+        </div>
+      </div>
+      <div id="chatbot-key-setup" class="chatbot-key-setup">
+        <p>OpenAI API 키를 입력하세요 <small>(브라우저에만 저장)</small></p>
+        <input type="password" id="chatbot-api-key" class="chatbot-input" placeholder="sk-proj-...">
+        <button type="button" id="chatbot-save-key" class="btn btn-primary btn-sm">키 저장</button>
       </div>
       <div id="chatbot-messages" class="chatbot-messages">
         <div class="chatbot-msg bot">
